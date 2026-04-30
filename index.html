@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>Water Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --blue: #1a6ef5;
+    --blue-light: #ddeeff;
+    --blue-mid: #b3d4ff;
+    --green: #1a8c5b;
+    --green-light: #d4f0e4;
+    --red-light: #fde8e8;
+    --red: #c0392b;
+    --bg: #f5f8ff;
+    --surface: #ffffff;
+    --border: rgba(26,110,245,0.12);
+    --text: #0d1b2a;
+    --muted: #6b7f99;
+    --mono: 'DM Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 0 3rem;
+  }
+
+  header {
+    width: 100%;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 1.1rem 1.5rem 1rem;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .header-drop { font-size: 22px; }
+  .header-title { font-size: 18px; font-weight: 600; letter-spacing: -0.03em; }
+  .header-sub { font-size: 12px; color: var(--muted); font-family: var(--mono); margin-left: auto; }
+
+  .container { width: 100%; max-width: 420px; padding: 1.25rem 1.1rem 0; }
+
+  /* Setup */
+  .setup-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.1rem 1.2rem;
+    margin-bottom: 1.1rem;
+  }
+  .setup-label {
+    font-size: 11px; font-family: var(--mono); color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.6rem;
+  }
+  .url-row { display: flex; gap: 8px; }
+  .url-input {
+    flex: 1; font-size: 13px; padding: 9px 11px;
+    border: 1px solid var(--border); border-radius: 9px;
+    background: var(--bg); color: var(--text);
+    font-family: var(--mono); outline: none;
+    transition: border-color 0.15s;
+  }
+  .url-input:focus { border-color: var(--blue); }
+  .save-btn {
+    font-size: 13px; font-weight: 500; padding: 9px 16px;
+    border: 1px solid var(--blue); border-radius: 9px;
+    background: var(--blue); color: white; cursor: pointer;
+    transition: opacity 0.15s;
+    font-family: var(--sans);
+  }
+  .save-btn:active { opacity: 0.8; }
+  .url-hint { font-size: 11px; color: var(--muted); margin-top: 7px; font-family: var(--mono); }
+
+  /* Big button */
+  .log-btn {
+    width: 100%; padding: 1.3rem;
+    font-size: 19px; font-weight: 600;
+    border-radius: 16px; border: none; cursor: pointer;
+    background: var(--blue); color: white;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    margin-bottom: 1.1rem;
+    letter-spacing: -0.02em;
+    box-shadow: 0 4px 20px rgba(26,110,245,0.25);
+    transition: transform 0.1s, box-shadow 0.1s;
+    font-family: var(--sans);
+  }
+  .log-btn:active { transform: scale(0.98); box-shadow: 0 2px 10px rgba(26,110,245,0.2); }
+  .log-btn:disabled {
+    background: #c5d3e8; color: #8fa3bf;
+    box-shadow: none; cursor: not-allowed;
+  }
+
+  /* Stats */
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.1rem; }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1rem 1.1rem;
+  }
+  .stat-label { font-size: 11px; color: var(--muted); font-family: var(--mono); margin-bottom: 5px; }
+  .stat-value { font-size: 26px; font-weight: 600; letter-spacing: -0.04em; color: var(--text); }
+  .stat-unit { font-size: 14px; font-weight: 400; color: var(--muted); }
+  .stat-badge {
+    font-size: 10px; font-family: var(--mono); padding: 2px 7px;
+    border-radius: 20px; display: inline-block; margin-top: 4px;
+  }
+  .badge-ok { background: var(--green-light); color: var(--green); }
+  .badge-warn { background: #fff3d4; color: #9a6500; }
+  .badge-low { background: var(--red-light); color: var(--red); }
+
+  /* Progress */
+  .progress-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.1rem 1.2rem; margin-bottom: 1.1rem;
+  }
+  .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .progress-title { font-size: 12px; font-family: var(--mono); color: var(--muted); }
+  .progress-frac { font-size: 13px; font-weight: 600; color: var(--text); font-family: var(--mono); }
+  .drops-row { display: flex; gap: 9px; flex-wrap: wrap; }
+  .drop {
+    width: 40px; height: 40px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 19px; border: 1.5px dashed #b3d4ff;
+    background: var(--bg); transition: all 0.2s;
+    color: #b3d4ff; font-family: var(--mono); font-size: 16px; font-weight: 500;
+  }
+  .drop.filled { background: var(--blue-light); border: 1.5px solid var(--blue); color: var(--blue); font-size: 19px; }
+  .drop.bonus { background: #e6f0ff; border: 1.5px solid #7ab0ff; }
+
+  /* Status */
+  .status {
+    font-size: 13px; text-align: center; padding: 0.8rem 1rem;
+    border-radius: 10px; margin-bottom: 1.1rem;
+    font-family: var(--mono); min-height: 42px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+  }
+  .status.idle { color: var(--muted); background: transparent; }
+  .status.loading { color: var(--blue); background: var(--blue-light); }
+  .status.success { color: var(--green); background: var(--green-light); }
+  .status.error { color: var(--red); background: var(--red-light); }
+
+  /* Log */
+  .log-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; overflow: hidden;
+  }
+  .log-header {
+    font-size: 11px; font-family: var(--mono); color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.07em;
+    padding: 0.9rem 1.2rem 0.7rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .log-entry {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 11px 1.2rem;
+    border-bottom: 1px solid var(--border);
+    animation: fadeIn 0.25s ease;
+  }
+  .log-entry:last-child { border-bottom: none; }
+  .log-time { font-size: 14px; font-family: var(--mono); color: var(--text); }
+  .log-date { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+  .log-amt { font-size: 13px; font-weight: 500; color: var(--blue); font-family: var(--mono); }
+  .no-log { text-align: center; padding: 1.5rem; font-size: 13px; color: var(--muted); font-family: var(--mono); }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+
+  .drop-emoji { font-size: 22px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="header-drop">💧</span>
+  <span class="header-title">Water Tracker</span>
+  <span class="header-sub" id="dateLabel"></span>
+</header>
+
+<div class="container">
+
+  <div class="setup-card" id="setupCard">
+    <div class="setup-label">Apps Script URL</div>
+    <div class="url-row">
+      <input class="url-input" id="scriptUrl" type="url" placeholder="https://script.google.com/macros/s/..." />
+      <button class="save-btn" onclick="saveUrl()">Save</button>
+    </div>
+    <div class="url-hint" id="urlHint">Paste your Google Apps Script Web App URL above.</div>
+  </div>
+
+  <button class="log-btn" id="logBtn" onclick="logRefill()">
+    <span class="drop-emoji">💧</span> Log Refill &nbsp;+1 L
+  </button>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">today</div>
+      <div class="stat-value" id="todayVal">—<span class="stat-unit"> L</span></div>
+      <div id="todayBadge"></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">last 2 days</div>
+      <div class="stat-value" id="twodayVal">—<span class="stat-unit"> L</span></div>
+      <div id="twodayBadge"></div>
+    </div>
+  </div>
+
+  <div class="progress-card">
+    <div class="progress-header">
+      <span class="progress-title">daily goal — 3 L min</span>
+      <span class="progress-frac" id="progFrac">0 / 3</span>
+    </div>
+    <div class="drops-row" id="dropsRow"></div>
+  </div>
+
+  <div class="status idle" id="statusMsg">Tap Log Refill to record a litre.</div>
+
+  <div class="log-card">
+    <div class="log-header">Today's log</div>
+    <div id="logList"><div class="no-log">No entries yet.</div></div>
+  </div>
+
+</div>
+
+<script>
+const SCRIPT_KEY = 'wt_url_v2';
+let scriptUrl = localStorage.getItem(SCRIPT_KEY) || '';
+let todayLog = [];
+let twoDayCount = 0;
+
+function todayStr() {
+  const d = new Date();
+  return pad(d.getDate()) + '/' + pad(d.getMonth()+1) + '/' + d.getFullYear();
+}
+function yesterdayStr() {
+  const d = new Date(); d.setDate(d.getDate()-1);
+  return pad(d.getDate()) + '/' + pad(d.getMonth()+1) + '/' + d.getFullYear();
+}
+function pad(n) { return String(n).padStart(2,'0'); }
+
+function saveUrl() {
+  const val = document.getElementById('scriptUrl').value.trim();
+  if (!val.startsWith('https://')) {
+    hint('Must be a valid https:// URL', true); return;
+  }
+  scriptUrl = val;
+  localStorage.setItem(SCRIPT_KEY, val);
+  hint('Saved! Connecting...', false);
+  loadData();
+}
+
+function hint(msg, err) {
+  const el = document.getElementById('urlHint');
+  el.textContent = msg;
+  el.style.color = err ? 'var(--red)' : 'var(--muted)';
+}
+
+async function loadData() {
+  if (!scriptUrl) return;
+  try {
+    const res = await fetch(scriptUrl);
+    const data = await res.json();
+    const today = todayStr(), yesterday = yesterdayStr();
+    let todayCount = 0;
+    twoDayCount = 0;
+    todayLog = [];
+    (data.rows || []).forEach(r => {
+      const d = String(r.date || '').trim();
+      if (d === today) { todayCount++; twoDayCount++; todayLog.push(String(r.time || '').substring(0,5)); }
+      else if (d === yesterday) twoDayCount++;
+    });
+    updateUI(todayCount);
+    renderLog();
+    hint('Connected ✓', false);
+    document.getElementById('setupCard').style.borderColor = '#9fe1cb';
+  } catch(e) {
+    setStatus('Could not load data. Check URL.', 'error');
+  }
+}
+
+async function logRefill() {
+  if (!scriptUrl) { setStatus('Save your Apps Script URL first.', 'error'); return; }
+  const btn = document.getElementById('logBtn');
+  btn.disabled = true;
+  setStatus('Logging...', 'loading');
+  try {
+    const res = await fetch(scriptUrl + '?action=log');
+    const data = await res.json();
+    if (data.success) {
+      const t = (data.time || '').substring(0,5) || new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+      todayLog.push(t);
+      twoDayCount++;
+      updateUI(todayLog.length);
+      renderLog();
+      setStatus('Logged 1 L at ' + t + ' ✓', 'success');
+    } else {
+      setStatus('Script error. Try again.', 'error');
+    }
+  } catch(e) {
+    setStatus('Fetch failed: ' + e.message, 'error');
+  }
+  btn.disabled = false;
+}
+
+function updateUI(today) {
+  document.getElementById('todayVal').innerHTML = today + '<span class="stat-unit"> L</span>';
+  document.getElementById('twodayVal').innerHTML = twoDayCount + '<span class="stat-unit"> L</span>';
+  document.getElementById('progFrac').textContent = today + ' / 3';
+
+  const tb = document.getElementById('todayBadge');
+  if (today >= 3) tb.innerHTML = '<span class="stat-badge badge-ok">goal met</span>';
+  else if (today === 2) tb.innerHTML = '<span class="stat-badge badge-warn">1 more to go</span>';
+  else tb.innerHTML = '<span class="stat-badge badge-low">' + (3 - today) + ' more needed</span>';
+
+  const db = document.getElementById('twodayBadge');
+  if (twoDayCount >= 7) db.innerHTML = '<span class="stat-badge badge-ok">ideal ✓</span>';
+  else if (twoDayCount >= 3) db.innerHTML = '<span class="stat-badge badge-warn">' + (7 - twoDayCount) + ' to ideal</span>';
+  else db.innerHTML = '<span class="stat-badge badge-low">keep going</span>';
+
+  renderDrops(today);
+}
+
+function renderDrops(count) {
+  const row = document.getElementById('dropsRow');
+  row.innerHTML = '';
+  const total = Math.max(count, 3);
+  for (let i = 0; i < total; i++) {
+    const d = document.createElement('div');
+    if (i < count && i < 3) { d.className = 'drop filled'; d.textContent = '💧'; }
+    else if (i < count) { d.className = 'drop filled bonus'; d.textContent = '💧'; }
+    else { d.className = 'drop'; d.textContent = (i+1); }
+    row.appendChild(d);
+  }
+}
+
+function renderLog() {
+  const el = document.getElementById('logList');
+  if (!todayLog.length) { el.innerHTML = '<div class="no-log">No entries yet.</div>'; return; }
+  el.innerHTML = [...todayLog].reverse().map((t,i) => `
+    <div class="log-entry">
+      <div>
+        <div class="log-time">${t}</div>
+      </div>
+      <span class="log-amt">+1 L</span>
+    </div>`).join('');
+}
+
+function setStatus(msg, type) {
+  const el = document.getElementById('statusMsg');
+  el.textContent = msg;
+  el.className = 'status ' + type;
+}
+
+function init() {
+  const d = new Date();
+  document.getElementById('dateLabel').textContent =
+    d.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short' });
+  renderDrops(0);
+  if (scriptUrl) {
+    document.getElementById('scriptUrl').value = scriptUrl;
+    hint('Saved. Loading...', false);
+    loadData();
+  }
+}
+
+init();
+</script>
+</body>
+</html>
