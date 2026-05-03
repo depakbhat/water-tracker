@@ -12,8 +12,12 @@
     --blue-mid: #b3d4ff;
     --green: #1a8c5b;
     --green-light: #d4f0e4;
+    --ideal: #0e7490;
+    --ideal-light: #cffafe;
     --red-light: #fde8e8;
     --red: #c0392b;
+    --amber: #9a6500;
+    --amber-light: #fff3d4;
     --bg: #f5f8ff;
     --surface: #ffffff;
     --border: rgba(26,110,245,0.12);
@@ -22,45 +26,47 @@
     --mono: 'DM Mono', monospace;
     --sans: 'DM Sans', sans-serif;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
   body {
     font-family: var(--sans);
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 0 0 3rem;
+    display: flex; flex-direction: column; align-items: center;
+    padding-bottom: 5rem;
   }
-
   header {
-    width: 100%;
-    background: var(--surface);
+    width: 100%; background: var(--surface);
     border-bottom: 1px solid var(--border);
-    padding: 1.1rem 1.5rem 1rem;
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
+    padding: 1rem 1.4rem;
+    display: flex; align-items: center; gap: 10px;
+    position: sticky; top: 0; z-index: 10;
   }
-
-  .header-drop { font-size: 22px; }
-  .header-title { font-size: 18px; font-weight: 600; letter-spacing: -0.03em; }
-  .header-sub { font-size: 12px; color: var(--muted); font-family: var(--mono); margin-left: auto; }
-
-  .container { width: 100%; max-width: 420px; padding: 1.25rem 1.1rem 0; }
+  .header-title { font-size: 17px; font-weight: 600; letter-spacing: -0.03em; }
+  .header-date { font-size: 12px; color: var(--muted); font-family: var(--mono); margin-left: auto; }
+  .tab-bar {
+    width: 100%; background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex; position: sticky; top: 53px; z-index: 9;
+  }
+  .tab-btn {
+    flex: 1; padding: 0.8rem; font-size: 13px; font-weight: 500;
+    border: none; background: none; cursor: pointer;
+    color: var(--muted); font-family: var(--sans);
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); }
+  .container { width: 100%; max-width: 420px; padding: 1.2rem 1.1rem 0; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
 
   /* Setup */
   .setup-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 1.1rem 1.2rem;
-    margin-bottom: 1.1rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.1rem 1.2rem; margin-bottom: 1.1rem;
   }
-  .setup-label {
+  .card-label {
     font-size: 11px; font-family: var(--mono); color: var(--muted);
     text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.6rem;
   }
@@ -69,38 +75,29 @@
     flex: 1; font-size: 13px; padding: 9px 11px;
     border: 1px solid var(--border); border-radius: 9px;
     background: var(--bg); color: var(--text);
-    font-family: var(--mono); outline: none;
-    transition: border-color 0.15s;
+    font-family: var(--mono); outline: none; transition: border-color 0.15s;
   }
   .url-input:focus { border-color: var(--blue); }
   .save-btn {
     font-size: 13px; font-weight: 500; padding: 9px 16px;
     border: 1px solid var(--blue); border-radius: 9px;
     background: var(--blue); color: white; cursor: pointer;
-    transition: opacity 0.15s;
     font-family: var(--sans);
   }
-  .save-btn:active { opacity: 0.8; }
   .url-hint { font-size: 11px; color: var(--muted); margin-top: 7px; font-family: var(--mono); }
 
-  /* Big button */
+  /* Log btn */
   .log-btn {
-    width: 100%; padding: 1.3rem;
-    font-size: 19px; font-weight: 600;
+    width: 100%; padding: 1.3rem; font-size: 19px; font-weight: 600;
     border-radius: 16px; border: none; cursor: pointer;
     background: var(--blue); color: white;
     display: flex; align-items: center; justify-content: center; gap: 10px;
-    margin-bottom: 1.1rem;
-    letter-spacing: -0.02em;
+    margin-bottom: 1.1rem; letter-spacing: -0.02em;
     box-shadow: 0 4px 20px rgba(26,110,245,0.25);
-    transition: transform 0.1s, box-shadow 0.1s;
-    font-family: var(--sans);
+    transition: transform 0.1s, box-shadow 0.1s; font-family: var(--sans);
   }
   .log-btn:active { transform: scale(0.98); box-shadow: 0 2px 10px rgba(26,110,245,0.2); }
-  .log-btn:disabled {
-    background: #c5d3e8; color: #8fa3bf;
-    box-shadow: none; cursor: not-allowed;
-  }
+  .log-btn:disabled { background: #c5d3e8; color: #8fa3bf; box-shadow: none; cursor: not-allowed; }
 
   /* Stats */
   .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.1rem; }
@@ -109,14 +106,15 @@
     border-radius: 14px; padding: 1rem 1.1rem;
   }
   .stat-label { font-size: 11px; color: var(--muted); font-family: var(--mono); margin-bottom: 5px; }
-  .stat-value { font-size: 26px; font-weight: 600; letter-spacing: -0.04em; color: var(--text); }
+  .stat-value { font-size: 26px; font-weight: 600; letter-spacing: -0.04em; }
   .stat-unit { font-size: 14px; font-weight: 400; color: var(--muted); }
   .stat-badge {
     font-size: 10px; font-family: var(--mono); padding: 2px 7px;
     border-radius: 20px; display: inline-block; margin-top: 4px;
   }
   .badge-ok { background: var(--green-light); color: var(--green); }
-  .badge-warn { background: #fff3d4; color: #9a6500; }
+  .badge-ideal { background: var(--ideal-light); color: var(--ideal); }
+  .badge-warn { background: var(--amber-light); color: var(--amber); }
   .badge-low { background: var(--red-light); color: var(--red); }
 
   /* Progress */
@@ -126,16 +124,16 @@
   }
   .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
   .progress-title { font-size: 12px; font-family: var(--mono); color: var(--muted); }
-  .progress-frac { font-size: 13px; font-weight: 600; color: var(--text); font-family: var(--mono); }
+  .progress-frac { font-size: 13px; font-weight: 600; font-family: var(--mono); }
   .drops-row { display: flex; gap: 9px; flex-wrap: wrap; }
   .drop {
     width: 40px; height: 40px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-size: 19px; border: 1.5px dashed #b3d4ff;
-    background: var(--bg); transition: all 0.2s;
-    color: #b3d4ff; font-family: var(--mono); font-size: 16px; font-weight: 500;
+    border: 1.5px dashed #b3d4ff; background: var(--bg);
+    color: #b3d4ff; font-family: var(--mono); font-size: 15px; font-weight: 500;
+    transition: all 0.2s;
   }
-  .drop.filled { background: var(--blue-light); border: 1.5px solid var(--blue); color: var(--blue); font-size: 19px; }
+  .drop.filled { background: var(--blue-light); border: 1.5px solid var(--blue); font-size: 19px; }
   .drop.bonus { background: #e6f0ff; border: 1.5px solid #7ab0ff; }
 
   /* Status */
@@ -144,90 +142,238 @@
     border-radius: 10px; margin-bottom: 1.1rem;
     font-family: var(--mono); min-height: 42px;
     display: flex; align-items: center; justify-content: center;
-    transition: background 0.2s;
   }
-  .status.idle { color: var(--muted); background: transparent; }
+  .status.idle { color: var(--muted); }
   .status.loading { color: var(--blue); background: var(--blue-light); }
   .status.success { color: var(--green); background: var(--green-light); }
   .status.error { color: var(--red); background: var(--red-light); }
 
   /* Log */
-  .log-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 14px; overflow: hidden;
-  }
+  .log-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
   .log-header {
     font-size: 11px; font-family: var(--mono); color: var(--muted);
     text-transform: uppercase; letter-spacing: 0.07em;
-    padding: 0.9rem 1.2rem 0.7rem;
-    border-bottom: 1px solid var(--border);
+    padding: 0.9rem 1.2rem 0.7rem; border-bottom: 1px solid var(--border);
   }
   .log-entry {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 11px 1.2rem;
-    border-bottom: 1px solid var(--border);
+    padding: 11px 1.2rem; border-bottom: 1px solid var(--border);
     animation: fadeIn 0.25s ease;
   }
   .log-entry:last-child { border-bottom: none; }
-  .log-time { font-size: 14px; font-family: var(--mono); color: var(--text); }
-  .log-date { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+  .log-time { font-size: 14px; font-family: var(--mono); }
   .log-amt { font-size: 13px; font-weight: 500; color: var(--blue); font-family: var(--mono); }
   .no-log { text-align: center; padding: 1.5rem; font-size: 13px; color: var(--muted); font-family: var(--mono); }
 
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+  /* ── INSIGHTS ── */
+  .streak-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 1.1rem; }
+  .streak-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 0.9rem 0.6rem; text-align: center;
+  }
+  .streak-icon { font-size: 20px; margin-bottom: 3px; }
+  .streak-val { font-size: 24px; font-weight: 600; letter-spacing: -0.04em; }
+  .streak-lbl { font-size: 10px; color: var(--muted); font-family: var(--mono); margin-top: 2px; }
 
-  .drop-emoji { font-size: 22px; }
+  /* Calendar */
+  .calendar-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.1rem 1.2rem; margin-bottom: 1.1rem;
+  }
+  .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .cal-month-label { font-size: 14px; font-weight: 600; }
+  .cal-nav { display: flex; gap: 6px; }
+  .cal-nav-btn {
+    width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--bg); cursor: pointer; font-size: 14px;
+    display: flex; align-items: center; justify-content: center; color: var(--text);
+  }
+  .cal-nav-btn:active { background: var(--blue-light); }
+  .cal-dow-row {
+    display: grid; grid-template-columns: repeat(7,1fr);
+    text-align: center; margin-bottom: 5px;
+  }
+  .cal-dow { font-size: 10px; color: var(--muted); font-family: var(--mono); padding: 2px 0; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
+  .cal-cell {
+    aspect-ratio: 1; border-radius: 8px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 500; position: relative;
+  }
+  .cal-cell.empty { background: transparent; }
+  .cal-cell.future { color: #c5d3e8; background: transparent; }
+  .cal-cell.missed { color: var(--muted); background: var(--bg); }
+  .cal-cell.partial { background: var(--amber-light); color: var(--amber); }
+  .cal-cell.goal { background: var(--green-light); color: var(--green); }
+  .cal-cell.ideal { background: var(--ideal-light); color: var(--ideal); }
+  .cal-cell.is-today { outline: 2px solid var(--blue); outline-offset: -2px; }
+  .cal-pip { width: 4px; height: 4px; border-radius: 50%; background: currentColor; margin-top: 2px; opacity: 0.6; }
+
+  .legend { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--muted); font-family: var(--mono); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+
+  /* Insight stats */
+  .insight-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.1rem; }
+  .insight-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1rem 1.1rem;
+  }
+  .insight-label { font-size: 11px; color: var(--muted); font-family: var(--mono); margin-bottom: 5px; }
+  .insight-value { font-size: 22px; font-weight: 600; letter-spacing: -0.04em; }
+  .insight-sub { font-size: 11px; color: var(--muted); font-family: var(--mono); margin-top: 3px; }
+
+  /* Time bars */
+  .time-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.1rem 1.2rem; margin-bottom: 1.1rem;
+  }
+  .section-label {
+    font-size: 11px; font-family: var(--mono); color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 12px;
+  }
+  .time-bars { display: flex; flex-direction: column; gap: 9px; }
+  .time-row { display: flex; align-items: center; gap: 10px; }
+  .time-lbl { font-size: 11px; font-family: var(--mono); color: var(--muted); width: 70px; flex-shrink: 0; }
+  .time-bar-bg { flex: 1; height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; }
+  .time-bar-fill { height: 100%; background: var(--blue); border-radius: 4px; transition: width 0.5s ease; }
+  .time-count { font-size: 11px; font-family: var(--mono); color: var(--muted); width: 18px; text-align: right; }
+
+  @keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:none; } }
 </style>
 </head>
 <body>
 
 <header>
-  <span class="header-drop">💧</span>
+  <span style="font-size:20px;">💧</span>
   <span class="header-title">Water Tracker</span>
-  <span class="header-sub" id="dateLabel"></span>
+  <span class="header-date" id="dateLabel"></span>
 </header>
+
+<div class="tab-bar">
+  <button class="tab-btn active" id="tbtn-today" onclick="switchTab('today')">Today</button>
+  <button class="tab-btn" id="tbtn-insights" onclick="switchTab('insights')">Insights</button>
+  <button class="tab-btn" id="tbtn-settings" onclick="switchTab('settings')">Settings</button>
+</div>
 
 <div class="container">
 
-  <div class="setup-card" id="setupCard">
-    <div class="setup-label">Apps Script URL</div>
-    <div class="url-row">
-      <input class="url-input" id="scriptUrl" type="url" placeholder="https://script.google.com/macros/s/..." />
-      <button class="save-btn" onclick="saveUrl()">Save</button>
+  <!-- TODAY -->
+  <div class="tab-panel active" id="tab-today">
+    <button class="log-btn" id="logBtn" onclick="logRefill()">
+      <span style="font-size:22px;">💧</span> Log Refill &nbsp;+1 L
+    </button>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">today</div>
+        <div class="stat-value" id="todayVal">—<span class="stat-unit"> L</span></div>
+        <div id="todayBadge"></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">last 2 days</div>
+        <div class="stat-value" id="twodayVal">—<span class="stat-unit"> L</span></div>
+        <div id="twodayBadge"></div>
+      </div>
     </div>
-    <div class="url-hint" id="urlHint">Paste your Google Apps Script Web App URL above.</div>
+    <div class="progress-card">
+      <div class="progress-header">
+        <span class="progress-title">daily goal — 3 L min</span>
+        <span class="progress-frac" id="progFrac">0 / 3</span>
+      </div>
+      <div class="drops-row" id="dropsRow"></div>
+    </div>
+    <div class="status idle" id="statusMsg">Tap Log Refill to record a litre.</div>
+    <div class="log-card">
+      <div class="log-header">Today's log</div>
+      <div id="logList"><div class="no-log">No entries yet.</div></div>
+    </div>
   </div>
 
-  <button class="log-btn" id="logBtn" onclick="logRefill()">
-    <span class="drop-emoji">💧</span> Log Refill &nbsp;+1 L
-  </button>
+  <!-- INSIGHTS -->
+  <div class="tab-panel" id="tab-insights">
 
-  <div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-label">today</div>
-      <div class="stat-value" id="todayVal">—<span class="stat-unit"> L</span></div>
-      <div id="todayBadge"></div>
+    <div class="streak-grid">
+      <div class="streak-card">
+        <div class="streak-icon">🔥</div>
+        <div class="streak-val" id="ins-streak">—</div>
+        <div class="streak-lbl">cur streak</div>
+      </div>
+      <div class="streak-card">
+        <div class="streak-icon">🏆</div>
+        <div class="streak-val" id="ins-best-streak">—</div>
+        <div class="streak-lbl">best streak</div>
+      </div>
+      <div class="streak-card">
+        <div class="streak-icon">✅</div>
+        <div class="streak-val" id="ins-goal-days">—</div>
+        <div class="streak-lbl">goal days</div>
+      </div>
     </div>
-    <div class="stat-card">
-      <div class="stat-label">last 2 days</div>
-      <div class="stat-value" id="twodayVal">—<span class="stat-unit"> L</span></div>
-      <div id="twodayBadge"></div>
+
+    <div class="calendar-card">
+      <div class="cal-header">
+        <span class="cal-month-label" id="calMonthLabel"></span>
+        <div class="cal-nav">
+          <button class="cal-nav-btn" onclick="changeMonth(-1)">‹</button>
+          <button class="cal-nav-btn" onclick="changeMonth(1)">›</button>
+        </div>
+      </div>
+      <div class="cal-dow-row">
+        <div class="cal-dow">S</div><div class="cal-dow">M</div><div class="cal-dow">T</div>
+        <div class="cal-dow">W</div><div class="cal-dow">T</div><div class="cal-dow">F</div>
+        <div class="cal-dow">S</div>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--ideal-light);border:1px solid var(--ideal)"></div>ideal 4+</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--green-light);border:1px solid var(--green)"></div>goal 3+</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--amber-light);border:1px solid var(--amber)"></div>partial</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--bg);border:1px solid #ccc"></div>missed</div>
+      </div>
     </div>
+
+    <div class="insight-grid">
+      <div class="insight-card">
+        <div class="insight-label">avg / day</div>
+        <div class="insight-value" id="ins-avg">—<span style="font-size:13px;font-weight:400;color:var(--muted)"> L</span></div>
+        <div class="insight-sub" id="ins-avg-sub"></div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-label">goal rate</div>
+        <div class="insight-value" id="ins-rate">—<span style="font-size:13px;font-weight:400;color:var(--muted)">%</span></div>
+        <div class="insight-sub" id="ins-rate-sub"></div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-label">total logged</div>
+        <div class="insight-value" id="ins-total">—<span style="font-size:13px;font-weight:400;color:var(--muted)"> L</span></div>
+        <div class="insight-sub" id="ins-total-sub"></div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-label">best day</div>
+        <div class="insight-value" id="ins-best">—<span style="font-size:13px;font-weight:400;color:var(--muted)"> L</span></div>
+        <div class="insight-sub" id="ins-best-sub"></div>
+      </div>
+    </div>
+
+    <div class="time-card">
+      <div class="section-label">When you refill (today)</div>
+      <div class="time-bars" id="timeBars">
+        <div style="font-size:12px;color:var(--muted);font-family:var(--mono);text-align:center;padding:8px 0">No data yet</div>
+      </div>
+    </div>
+
   </div>
 
-  <div class="progress-card">
-    <div class="progress-header">
-      <span class="progress-title">daily goal — 3 L min</span>
-      <span class="progress-frac" id="progFrac">0 / 3</span>
+  <!-- SETTINGS -->
+  <div class="tab-panel" id="tab-settings">
+    <div class="setup-card">
+      <div class="card-label">Apps Script URL</div>
+      <div class="url-row">
+        <input class="url-input" id="scriptUrl" type="url" placeholder="https://script.google.com/macros/s/..." />
+        <button class="save-btn" onclick="saveUrl()">Save</button>
+      </div>
+      <div class="url-hint" id="urlHint">Paste your Google Apps Script Web App URL above.</div>
     </div>
-    <div class="drops-row" id="dropsRow"></div>
-  </div>
-
-  <div class="status idle" id="statusMsg">Tap Log Refill to record a litre.</div>
-
-  <div class="log-card">
-    <div class="log-header">Today's log</div>
-    <div id="logList"><div class="no-log">No entries yet.</div></div>
   </div>
 
 </div>
@@ -235,72 +381,69 @@
 <script>
 const SCRIPT_KEY = 'wt_url_v2';
 let scriptUrl = localStorage.getItem(SCRIPT_KEY) || '';
-let todayLog = [];
+let todayLog = [];        // ["HH:MM", ...]
 let twoDayCount = 0;
+let allData = {};         // "dd/MM/yyyy" -> count
+let allTimes = [];        // all HH:MM strings ever logged (today only for now)
+let calYear, calMonth;
 
+// ── UTILS ──
+function pad(n) { return String(n).padStart(2,'0'); }
 function todayStr() {
   const d = new Date();
-  return pad(d.getDate()) + '/' + pad(d.getMonth()+1) + '/' + d.getFullYear();
+  return pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear();
 }
 function yesterdayStr() {
   const d = new Date(); d.setDate(d.getDate()-1);
-  return pad(d.getDate()) + '/' + pad(d.getMonth()+1) + '/' + d.getFullYear();
+  return pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear();
 }
-function pad(n) { return String(n).padStart(2,'0'); }
+function parseSheetDate(raw) {
+  const s = String(raw||'').trim();
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) return s;
+  try {
+    const d = new Date(s);
+    if (isNaN(d)) return '';
+    const ist = new Date(d.getTime() + 5.5*60*60*1000);
+    return pad(ist.getUTCDate())+'/'+pad(ist.getUTCMonth()+1)+'/'+ist.getUTCFullYear();
+  } catch(e) { return ''; }
+}
+function parseSheetTime(raw) {
+  const s = String(raw||'').trim();
+  if (/^\d{2}:\d{2}/.test(s)) return s.substring(0,5);
+  try {
+    const d = new Date(s);
+    if (isNaN(d)) return '';
+    const totalMins = d.getUTCHours()*60 + d.getUTCMinutes();
+    const istMins = (totalMins+330)%(24*60);
+    return pad(Math.floor(istMins/60))+':'+pad(istMins%60);
+  } catch(e) { return ''; }
+}
 
+// ── TABS ──
+function switchTab(name) {
+  ['today','insights','settings'].forEach(t => {
+    document.getElementById('tab-'+t).classList.toggle('active', t===name);
+    document.getElementById('tbtn-'+t).classList.toggle('active', t===name);
+  });
+  if (name === 'insights') renderInsights();
+}
+
+// ── SETTINGS ──
 function saveUrl() {
   const val = document.getElementById('scriptUrl').value.trim();
-  if (!val.startsWith('https://')) {
-    hint('Must be a valid https:// URL', true); return;
-  }
+  if (!val.startsWith('https://')) { hint('Must be a valid https:// URL', true); return; }
   scriptUrl = val;
   localStorage.setItem(SCRIPT_KEY, val);
   hint('Saved! Connecting...', false);
   loadData();
 }
-
 function hint(msg, err) {
   const el = document.getElementById('urlHint');
   el.textContent = msg;
   el.style.color = err ? 'var(--red)' : 'var(--muted)';
 }
 
-// Parse whatever date string Google Sheets returns into "dd/MM/yyyy" IST
-function parseSheetDate(raw) {
-  const s = String(raw || '').trim();
-  // Already formatted: "01/05/2026"
-  if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) return s;
-  // ISO or full Date toString — parse and convert to IST
-  try {
-    const d = new Date(s);
-    if (isNaN(d)) return '';
-    // Add IST offset (+5:30) to UTC to get local date
-    const ist = new Date(d.getTime() + 5.5 * 60 * 60 * 1000);
-    const dd = String(ist.getUTCDate()).padStart(2,'0');
-    const mm = String(ist.getUTCMonth()+1).padStart(2,'0');
-    const yyyy = ist.getUTCFullYear();
-    return dd + '/' + mm + '/' + yyyy;
-  } catch(e) { return ''; }
-}
-
-// Parse Google Sheets time — stored as 1899 epoch Date, real time is in UTC H:M
-function parseSheetTime(raw) {
-  const s = String(raw || '').trim();
-  // Already formatted: "14:30"
-  if (/^\d{2}:\d{2}/.test(s)) return s.substring(0,5);
-  try {
-    const d = new Date(s);
-    if (isNaN(d)) return '';
-    // For 1899 epoch times, Google Sheets encodes the time-of-day as UTC hours/minutes
-    // but with a legacy IST offset of +0521 — so actual time = UTC + 5h30m
-    const totalMins = d.getUTCHours() * 60 + d.getUTCMinutes();
-    const istMins = (totalMins + 330) % (24 * 60); // add IST offset
-    const hh = String(Math.floor(istMins / 60)).padStart(2,'0');
-    const min = String(istMins % 60).padStart(2,'0');
-    return hh + ':' + min;
-  } catch(e) { return ''; }
-}
-
+// ── DATA LOAD ──
 async function loadData() {
   if (!scriptUrl) return;
   try {
@@ -308,100 +451,240 @@ async function loadData() {
     const data = await res.json();
     const today = todayStr(), yesterday = yesterdayStr();
     let todayCount = 0;
-    twoDayCount = 0;
-    todayLog = [];
-    (data.rows || []).forEach(r => {
+    twoDayCount = 0; todayLog = []; allData = {}; allTimes = [];
+    (data.rows||[]).forEach(r => {
       const d = parseSheetDate(r.date);
       const t = parseSheetTime(r.time);
-      if (d === today) { todayCount++; twoDayCount++; todayLog.push(t); }
-      else if (d === yesterday) twoDayCount++;
+      if (!d) return;
+      allData[d] = (allData[d]||0) + 1;
+      if (d === today) {
+        todayCount++; twoDayCount++;
+        todayLog.push(t); allTimes.push(t);
+      } else if (d === yesterday) twoDayCount++;
     });
-    updateUI(todayCount);
+    updateTodayUI(todayCount);
     renderLog();
     hint('Connected ✓', false);
-    document.getElementById('setupCard').style.borderColor = '#9fe1cb';
   } catch(e) {
-    setStatus('Could not load data. Check URL.', 'error');
+    setStatus('Could not load data. Check URL in Settings.', 'error');
   }
 }
 
 async function logRefill() {
-  if (!scriptUrl) { setStatus('Save your Apps Script URL first.', 'error'); return; }
+  if (!scriptUrl) { setStatus('Add your Apps Script URL in Settings first.', 'error'); return; }
   const btn = document.getElementById('logBtn');
   btn.disabled = true;
   setStatus('Logging...', 'loading');
   try {
-    const res = await fetch(scriptUrl + '?action=log');
+    const res = await fetch(scriptUrl+'?action=log');
     const data = await res.json();
     if (data.success) {
-      const t = (data.time || '').substring(0,5) || new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
-      todayLog.push(t);
+      const t = (data.time||'').substring(0,5) || new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+      todayLog.push(t); allTimes.push(t);
       twoDayCount++;
-      updateUI(todayLog.length);
+      const today = todayStr();
+      allData[today] = (allData[today]||0)+1;
+      updateTodayUI(todayLog.length);
       renderLog();
-      setStatus('Logged 1 L at ' + t + ' ✓', 'success');
-    } else {
-      setStatus('Script error. Try again.', 'error');
-    }
-  } catch(e) {
-    setStatus('Fetch failed: ' + e.message, 'error');
-  }
+      setStatus('Logged 1 L at '+t+' ✓', 'success');
+    } else { setStatus('Script error. Try again.', 'error'); }
+  } catch(e) { setStatus('Fetch failed: '+e.message, 'error'); }
   btn.disabled = false;
 }
 
-function updateUI(today) {
-  document.getElementById('todayVal').innerHTML = today + '<span class="stat-unit"> L</span>';
-  document.getElementById('twodayVal').innerHTML = twoDayCount + '<span class="stat-unit"> L</span>';
-  document.getElementById('progFrac').textContent = today + ' / 3';
-
+// ── TODAY UI ──
+function updateTodayUI(today) {
+  document.getElementById('todayVal').innerHTML = today+'<span class="stat-unit"> L</span>';
+  document.getElementById('twodayVal').innerHTML = twoDayCount+'<span class="stat-unit"> L</span>';
+  document.getElementById('progFrac').textContent = today+' / 3';
   const tb = document.getElementById('todayBadge');
-  if (today >= 3) tb.innerHTML = '<span class="stat-badge badge-ok">goal met</span>';
+  if (today >= 3) tb.innerHTML = '<span class="stat-badge badge-ok">goal met ✓</span>';
   else if (today === 2) tb.innerHTML = '<span class="stat-badge badge-warn">1 more to go</span>';
-  else tb.innerHTML = '<span class="stat-badge badge-low">' + (3 - today) + ' more needed</span>';
-
+  else tb.innerHTML = '<span class="stat-badge badge-low">'+(3-today)+' more needed</span>';
   const db = document.getElementById('twodayBadge');
-  if (twoDayCount >= 7) db.innerHTML = '<span class="stat-badge badge-ok">ideal ✓</span>';
-  else if (twoDayCount >= 3) db.innerHTML = '<span class="stat-badge badge-warn">' + (7 - twoDayCount) + ' to ideal</span>';
+  if (twoDayCount >= 7) db.innerHTML = '<span class="stat-badge badge-ideal">ideal ✓</span>';
+  else if (twoDayCount >= 3) db.innerHTML = '<span class="stat-badge badge-warn">'+(7-twoDayCount)+' to ideal</span>';
   else db.innerHTML = '<span class="stat-badge badge-low">keep going</span>';
-
   renderDrops(today);
 }
-
 function renderDrops(count) {
   const row = document.getElementById('dropsRow');
   row.innerHTML = '';
   const total = Math.max(count, 3);
-  for (let i = 0; i < total; i++) {
+  for (let i=0; i<total; i++) {
     const d = document.createElement('div');
-    if (i < count && i < 3) { d.className = 'drop filled'; d.textContent = '💧'; }
-    else if (i < count) { d.className = 'drop filled bonus'; d.textContent = '💧'; }
-    else { d.className = 'drop'; d.textContent = (i+1); }
+    if (i < count && i < 3) { d.className='drop filled'; d.textContent='💧'; }
+    else if (i < count) { d.className='drop filled bonus'; d.textContent='💧'; }
+    else { d.className='drop'; d.textContent=(i+1); }
     row.appendChild(d);
   }
 }
-
 function renderLog() {
   const el = document.getElementById('logList');
-  if (!todayLog.length) { el.innerHTML = '<div class="no-log">No entries yet.</div>'; return; }
-  el.innerHTML = [...todayLog].reverse().map((t,i) => `
+  if (!todayLog.length) { el.innerHTML='<div class="no-log">No entries yet.</div>'; return; }
+  el.innerHTML = [...todayLog].reverse().map(t=>`
     <div class="log-entry">
-      <div>
-        <div class="log-time">${t}</div>
-      </div>
+      <span class="log-time">${t}</span>
       <span class="log-amt">+1 L</span>
     </div>`).join('');
 }
-
 function setStatus(msg, type) {
   const el = document.getElementById('statusMsg');
-  el.textContent = msg;
-  el.className = 'status ' + type;
+  el.textContent = msg; el.className = 'status '+type;
 }
 
+// ── INSIGHTS ──
+function computeStats() {
+  const keys = Object.keys(allData);
+  if (!keys.length) return null;
+  const sorted = keys.slice().sort((a,b) => {
+    const [da,ma,ya] = a.split('/'); const [db,mb,yb] = b.split('/');
+    return new Date(ya,ma-1,da) - new Date(yb,mb-1,db);
+  });
+  const goalDays = sorted.filter(d => allData[d] >= 3);
+  const totalL = keys.reduce((s,k) => s+allData[k], 0);
+  const bestDay = sorted.reduce((best,d) => allData[d]>allData[best]?d:best, sorted[0]);
+  const trackedDays = keys.length;
+  const avgPerDay = totalL / trackedDays;
+  const goalRate = Math.round(goalDays.length / trackedDays * 100);
+
+  // Current streak from today backwards (goal days only)
+  let streak = 0;
+  const d = new Date();
+  for (let i=0; i<365; i++) {
+    const k = pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear();
+    if ((allData[k]||0) >= 3) { streak++; d.setDate(d.getDate()-1); }
+    else break;
+  }
+
+  // Best streak ever
+  let bestStreak = 0, cur = 0, prev = null;
+  for (const k of sorted) {
+    if ((allData[k]||0) < 3) { cur=0; prev=k; continue; }
+    if (!prev) { cur=1; }
+    else {
+      const [dd,mm,yy]=k.split('/'), [pd,pm,py]=prev.split('/');
+      const diff = (new Date(yy,mm-1,dd)-new Date(py,pm-1,pd))/86400000;
+      cur = diff===1 ? cur+1 : 1;
+    }
+    if (cur > bestStreak) bestStreak = cur;
+    prev = k;
+  }
+
+  return { sorted, goalDays: goalDays.length, totalL, bestDay, trackedDays, avgPerDay, goalRate, streak, bestStreak };
+}
+
+function renderInsights() {
+  const s = computeStats();
+  if (!s) {
+    ['ins-streak','ins-best-streak','ins-goal-days'].forEach(id => document.getElementById(id).textContent='0');
+    renderCalendar(); return;
+  }
+  document.getElementById('ins-streak').textContent = s.streak;
+  document.getElementById('ins-best-streak').textContent = s.bestStreak;
+  document.getElementById('ins-goal-days').textContent = s.goalDays;
+
+  document.getElementById('ins-avg').innerHTML = s.avgPerDay.toFixed(1)+'<span style="font-size:13px;font-weight:400;color:var(--muted)"> L</span>';
+  document.getElementById('ins-avg-sub').textContent = 'over '+s.trackedDays+' tracked days';
+  document.getElementById('ins-rate').innerHTML = s.goalRate+'<span style="font-size:13px;font-weight:400;color:var(--muted)">%</span>';
+  document.getElementById('ins-rate-sub').textContent = s.goalDays+' of '+s.trackedDays+' days';
+  document.getElementById('ins-total').innerHTML = s.totalL+'<span style="font-size:13px;font-weight:400;color:var(--muted)"> L</span>';
+  document.getElementById('ins-total-sub').textContent = (s.totalL*1000).toLocaleString()+' ml total';
+
+  const [bd,bm,by] = s.bestDay.split('/');
+  const bDate = new Date(by,bm-1,bd);
+  document.getElementById('ins-best').innerHTML = allData[s.bestDay]+'<span style="font-size:13px;font-weight:400;color:var(--muted)"> L</span>';
+  document.getElementById('ins-best-sub').textContent = bDate.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+
+  renderTimeBars();
+  renderCalendar();
+}
+
+function renderTimeBars() {
+  const slots = [
+    { lbl: 'Morning', h: [5,11], count: 0 },
+    { lbl: 'Afternoon', h: [11,17], count: 0 },
+    { lbl: 'Evening', h: [17,21], count: 0 },
+    { lbl: 'Night', h: [21,24], count: 0 },
+    { lbl: 'Early AM', h: [0,5], count: 0 },
+  ];
+  todayLog.forEach(t => {
+    const h = parseInt(t.split(':')[0]);
+    slots.forEach(s => { if (h >= s.h[0] && h < s.h[1]) s.count++; });
+  });
+  const active = slots.filter(s => s.count > 0);
+  const container = document.getElementById('timeBars');
+  if (!active.length) {
+    container.innerHTML='<div style="font-size:12px;color:var(--muted);font-family:var(--mono);text-align:center;padding:8px 0">No refills logged today yet</div>';
+    return;
+  }
+  const max = Math.max(...slots.map(s=>s.count), 1);
+  container.innerHTML = active.map(s=>`
+    <div class="time-row">
+      <span class="time-lbl">${s.lbl}</span>
+      <div class="time-bar-bg"><div class="time-bar-fill" style="width:${Math.round(s.count/max*100)}%"></div></div>
+      <span class="time-count">${s.count}</span>
+    </div>`).join('');
+}
+
+// ── CALENDAR ──
+function renderCalendar() {
+  const now = new Date();
+  if (calYear === undefined) { calYear = now.getFullYear(); calMonth = now.getMonth(); }
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('calMonthLabel').textContent = months[calMonth]+' '+calYear;
+
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const today = todayStr();
+
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+
+  for (let i=0; i<firstDay; i++) {
+    const c = document.createElement('div');
+    c.className = 'cal-cell empty';
+    grid.appendChild(c);
+  }
+
+  const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  for (let day=1; day<=daysInMonth; day++) {
+    const k = pad(day)+'/'+pad(calMonth+1)+'/'+calYear;
+    const cellDate = new Date(calYear, calMonth, day);
+    const isToday = k === today;
+    const isFuture = cellDate > nowMidnight;
+    const count = allData[k] || 0;
+    const isPast = !isFuture && !isToday;
+
+    const c = document.createElement('div');
+    let cls = 'cal-cell';
+    if (isFuture) cls += ' future';
+    else if (count >= 4) cls += ' ideal';
+    else if (count >= 3) cls += ' goal';
+    else if (count >= 1) cls += ' partial';
+    else cls += ' missed';
+    if (isToday) cls += ' is-today';
+    c.className = cls;
+
+    c.innerHTML = `<span>${day}</span>${(count>0 && !isFuture) ? '<div class="cal-pip"></div>' : ''}`;
+    if (count > 0 && !isFuture) c.title = count+'L';
+    grid.appendChild(c);
+  }
+}
+
+function changeMonth(dir) {
+  calMonth += dir;
+  if (calMonth > 11) { calMonth=0; calYear++; }
+  if (calMonth < 0) { calMonth=11; calYear--; }
+  renderCalendar();
+}
+
+// ── INIT ──
 function init() {
   const d = new Date();
   document.getElementById('dateLabel').textContent =
-    d.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short' });
+    d.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
   renderDrops(0);
   if (scriptUrl) {
     document.getElementById('scriptUrl').value = scriptUrl;
@@ -409,7 +692,6 @@ function init() {
     loadData();
   }
 }
-
 init();
 </script>
 </body>
