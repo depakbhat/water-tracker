@@ -2,378 +2,509 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-<title>Water Tracker</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#0f1117" />
+<title>Punch Tracker</title>
+<link rel="manifest" href="manifest.json" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@300;500;700&display=swap" rel="stylesheet" />
 <style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
   :root {
-    --blue: #1a6ef5;
-    --blue-light: #ddeeff;
-    --blue-mid: #b3d4ff;
-    --green: #1a8c5b;
-    --green-light: #d4f0e4;
-    --red-light: #fde8e8;
-    --red: #c0392b;
-    --bg: #f5f8ff;
-    --surface: #ffffff;
-    --border: rgba(26,110,245,0.12);
-    --text: #0d1b2a;
-    --muted: #6b7f99;
+    --bg: #0f1117;
+    --surface: #181c27;
+    --border: rgba(255,255,255,0.07);
+    --text: #eef0f6;
+    --muted: #6b7280;
+    --green: #22d3a5;
+    --green-dim: rgba(34,211,165,0.12);
+    --orange: #f97316;
+    --orange-dim: rgba(249,115,22,0.12);
+    --red: #ef4444;
+    --red-dim: rgba(239,68,68,0.12);
     --mono: 'DM Mono', monospace;
-    --sans: 'DM Sans', sans-serif;
+    --sans: 'Sora', sans-serif;
   }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: var(--sans);
+  html, body {
+    height: 100%;
     background: var(--bg);
     color: var(--text);
-    min-height: 100vh;
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 0 0 3rem;
+    justify-content: center;
+    min-height: 100dvh;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
   }
 
-  header {
+  /* Subtle grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
     width: 100%;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 1.1rem 1.5rem 1rem;
+    max-width: 360px;
     display: flex;
-    align-items: baseline;
-    gap: 10px;
+    flex-direction: column;
+    gap: 1rem;
   }
 
-  .header-drop { font-size: 22px; }
-  .header-title { font-size: 18px; font-weight: 600; letter-spacing: -0.03em; }
-  .header-sub { font-size: 12px; color: var(--muted); font-family: var(--mono); margin-left: auto; }
+  /* Header */
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 0.25rem;
+  }
+  .header-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: pulse 2.5s ease-in-out infinite;
+  }
+  .header-dot.inactive { background: var(--muted); box-shadow: none; animation: none; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
-  .container { width: 100%; max-width: 420px; padding: 1.25rem 1.1rem 0; }
+  .header-title {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
 
-  /* Setup */
-  .setup-card {
+  /* Main card */
+  .card {
     background: var(--surface);
     border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2rem 1.75rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.4s;
+  }
+  .card.active { border-color: rgba(34,211,165,0.25); }
+  .card.ready { border-color: rgba(249,115,22,0.4); }
+
+  /* Corner accent */
+  .card::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 80px; height: 80px;
+    background: radial-gradient(circle at top right, rgba(34,211,165,0.08), transparent 70%);
+    pointer-events: none;
+    transition: opacity 0.4s;
+  }
+  .card.ready::after { background: radial-gradient(circle at top right, rgba(249,115,22,0.12), transparent 70%); }
+
+  .state-tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .state-tag::before {
+    content: '//';
+    color: var(--green);
+    font-size: 11px;
+  }
+
+  .big-time {
+    font-family: var(--mono);
+    font-size: 52px;
+    font-weight: 500;
+    letter-spacing: -2px;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 0.35rem;
+    transition: color 0.4s;
+  }
+  .big-time.green { color: var(--green); }
+  .big-time.orange { color: var(--orange); }
+
+  .sub-line {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 1.75rem;
+    font-family: var(--mono);
+  }
+  .sub-line span { color: var(--text); }
+
+  /* Progress bar */
+  .prog-wrap {
+    margin-bottom: 0.5rem;
+  }
+  .prog-bar {
+    height: 3px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+  .prog-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: var(--green);
+    width: 0%;
+    transition: width 1s linear, background 0.4s;
+    box-shadow: 0 0 8px var(--green);
+  }
+  .prog-fill.orange { background: var(--orange); box-shadow: 0 0 8px var(--orange); }
+  .prog-meta {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .prog-meta .pct { color: var(--text); font-weight: 500; }
+
+  /* Button */
+  .btn {
+    width: 100%;
+    padding: 15px;
     border-radius: 14px;
-    padding: 1.1rem 1.2rem;
-    margin-bottom: 1.1rem;
-  }
-  .setup-label {
-    font-size: 11px; font-family: var(--mono); color: var(--muted);
-    text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.6rem;
-  }
-  .url-row { display: flex; gap: 8px; }
-  .url-input {
-    flex: 1; font-size: 13px; padding: 9px 11px;
-    border: 1px solid var(--border); border-radius: 9px;
-    background: var(--bg); color: var(--text);
-    font-family: var(--mono); outline: none;
-    transition: border-color 0.15s;
-  }
-  .url-input:focus { border-color: var(--blue); }
-  .save-btn {
-    font-size: 13px; font-weight: 500; padding: 9px 16px;
-    border: 1px solid var(--blue); border-radius: 9px;
-    background: var(--blue); color: white; cursor: pointer;
-    transition: opacity 0.15s;
+    border: none;
     font-family: var(--sans);
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
   }
-  .save-btn:active { opacity: 0.8; }
-  .url-hint { font-size: 11px; color: var(--muted); margin-top: 7px; font-family: var(--mono); }
+  .btn:active { transform: scale(0.98); }
+  .btn-in {
+    background: var(--green);
+    color: #0a1a14;
+  }
+  .btn-in:hover { background: #2de8b6; box-shadow: 0 0 24px rgba(34,211,165,0.35); }
+  .btn-out {
+    background: var(--orange);
+    color: #1a0d00;
+  }
+  .btn-out:hover { background: #fb8c3d; box-shadow: 0 0 24px rgba(249,115,22,0.35); }
+  .btn-locked {
+    background: rgba(255,255,255,0.04);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    cursor: not-allowed;
+  }
+  .btn-done {
+    background: rgba(255,255,255,0.04);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    cursor: not-allowed;
+  }
 
-  /* Big button */
-  .log-btn {
-    width: 100%; padding: 1.3rem;
-    font-size: 19px; font-weight: 600;
-    border-radius: 16px; border: none; cursor: pointer;
-    background: var(--blue); color: white;
-    display: flex; align-items: center; justify-content: center; gap: 10px;
-    margin-bottom: 1.1rem;
-    letter-spacing: -0.02em;
-    box-shadow: 0 4px 20px rgba(26,110,245,0.25);
-    transition: transform 0.1s, box-shadow 0.1s;
-    font-family: var(--sans);
+  /* ALERT OVERLAY - visual cue */
+  #alert-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: rgba(249,115,22,0.08);
+    animation: flashbg 1.2s ease-in-out infinite;
+    pointer-events: none;
   }
-  .log-btn:active { transform: scale(0.98); box-shadow: 0 2px 10px rgba(26,110,245,0.2); }
-  .log-btn:disabled {
-    background: #c5d3e8; color: #8fa3bf;
-    box-shadow: none; cursor: not-allowed;
+  #alert-overlay.show { display: block; }
+  @keyframes flashbg {
+    0%,100% { background: rgba(249,115,22,0.05); }
+    50% { background: rgba(249,115,22,0.18); }
   }
 
-  /* Stats */
-  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.1rem; }
-  .stat-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 14px; padding: 1rem 1.1rem;
+  .alert-banner {
+    display: none;
+    background: var(--orange);
+    color: #1a0d00;
+    border-radius: 14px;
+    padding: 1rem 1.25rem;
+    text-align: center;
+    animation: slideDown 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
-  .stat-label { font-size: 11px; color: var(--muted); font-family: var(--mono); margin-bottom: 5px; }
-  .stat-value { font-size: 26px; font-weight: 600; letter-spacing: -0.04em; color: var(--text); }
-  .stat-unit { font-size: 14px; font-weight: 400; color: var(--muted); }
-  .stat-badge {
-    font-size: 10px; font-family: var(--mono); padding: 2px 7px;
-    border-radius: 20px; display: inline-block; margin-top: 4px;
+  .alert-banner.show { display: block; }
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-12px); }
+    to { opacity: 1; transform: translateY(0); }
   }
-  .badge-ok { background: var(--green-light); color: var(--green); }
-  .badge-warn { background: #fff3d4; color: #9a6500; }
-  .badge-low { background: var(--red-light); color: var(--red); }
+  .alert-banner .alert-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 3px;
+  }
+  .alert-banner .alert-sub {
+    font-size: 12px;
+    opacity: 0.7;
+    font-family: var(--mono);
+  }
 
-  /* Progress */
-  .progress-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 14px; padding: 1.1rem 1.2rem; margin-bottom: 1.1rem;
+  /* Summary row */
+  .summary {
+    display: none;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
   }
-  .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-  .progress-title { font-size: 12px; font-family: var(--mono); color: var(--muted); }
-  .progress-frac { font-size: 13px; font-weight: 600; color: var(--text); font-family: var(--mono); }
-  .drops-row { display: flex; gap: 9px; flex-wrap: wrap; }
-  .drop {
-    width: 40px; height: 40px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 19px; border: 1.5px dashed #b3d4ff;
-    background: var(--bg); transition: all 0.2s;
-    color: #b3d4ff; font-family: var(--mono); font-size: 16px; font-weight: 500;
+  .summary.show { display: grid; }
+  .summary-cell {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0.85rem 1rem;
   }
-  .drop.filled { background: var(--blue-light); border: 1.5px solid var(--blue); color: var(--blue); font-size: 19px; }
-  .drop.bonus { background: #e6f0ff; border: 1.5px solid #7ab0ff; }
+  .summary-cell .s-label {
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .summary-cell .s-val {
+    font-size: 20px;
+    font-family: var(--mono);
+    font-weight: 500;
+    color: var(--text);
+  }
 
-  /* Status */
-  .status {
-    font-size: 13px; text-align: center; padding: 0.8rem 1rem;
-    border-radius: 10px; margin-bottom: 1.1rem;
-    font-family: var(--mono); min-height: 42px;
-    display: flex; align-items: center; justify-content: center;
-    transition: background 0.2s;
+  /* Reset */
+  .reset-link {
+    text-align: center;
+    font-size: 12px;
+    font-family: var(--mono);
+    color: var(--muted);
+    cursor: pointer;
+    padding: 0.5rem;
+    display: none;
   }
-  .status.idle { color: var(--muted); background: transparent; }
-  .status.loading { color: var(--blue); background: var(--blue-light); }
-  .status.success { color: var(--green); background: var(--green-light); }
-  .status.error { color: var(--red); background: var(--red-light); }
-
-  /* Log */
-  .log-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 14px; overflow: hidden;
-  }
-  .log-header {
-    font-size: 11px; font-family: var(--mono); color: var(--muted);
-    text-transform: uppercase; letter-spacing: 0.07em;
-    padding: 0.9rem 1.2rem 0.7rem;
-    border-bottom: 1px solid var(--border);
-  }
-  .log-entry {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 11px 1.2rem;
-    border-bottom: 1px solid var(--border);
-    animation: fadeIn 0.25s ease;
-  }
-  .log-entry:last-child { border-bottom: none; }
-  .log-time { font-size: 14px; font-family: var(--mono); color: var(--text); }
-  .log-date { font-size: 11px; color: var(--muted); font-family: var(--mono); }
-  .log-amt { font-size: 13px; font-weight: 500; color: var(--blue); font-family: var(--mono); }
-  .no-log { text-align: center; padding: 1.5rem; font-size: 13px; color: var(--muted); font-family: var(--mono); }
-
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
-
-  .drop-emoji { font-size: 22px; }
+  .reset-link.show { display: block; }
+  .reset-link:hover { color: var(--text); }
 </style>
 </head>
 <body>
 
-<header>
-  <span class="header-drop">💧</span>
-  <span class="header-title">Water Tracker</span>
-  <span class="header-sub" id="dateLabel"></span>
-</header>
+<div id="alert-overlay"></div>
 
 <div class="container">
-
-  <div class="setup-card" id="setupCard">
-    <div class="setup-label">Apps Script URL</div>
-    <div class="url-row">
-      <input class="url-input" id="scriptUrl" type="url" placeholder="https://script.google.com/macros/s/..." />
-      <button class="save-btn" onclick="saveUrl()">Save</button>
-    </div>
-    <div class="url-hint" id="urlHint">Paste your Google Apps Script Web App URL above.</div>
+  <div class="header">
+    <div class="header-dot inactive" id="header-dot"></div>
+    <div class="header-title">Punch Tracker</div>
   </div>
 
-  <button class="log-btn" id="logBtn" onclick="logRefill()">
-    <span class="drop-emoji">💧</span> Log Refill &nbsp;+1 L
-  </button>
+  <div class="alert-banner" id="alert-banner">
+    <div class="alert-title">8 hours done — punch out now!</div>
+    <div class="alert-sub" id="alert-sub-text">open PeopleStrong and log out</div>
+  </div>
 
-  <div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-label">today</div>
-      <div class="stat-value" id="todayVal">—<span class="stat-unit"> L</span></div>
-      <div id="todayBadge"></div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">last 2 days</div>
-      <div class="stat-value" id="twodayVal">—<span class="stat-unit"> L</span></div>
-      <div id="twodayBadge"></div>
+  <div class="card" id="main-card">
+    <div class="state-tag" id="state-tag">waiting for punch in</div>
+    <div class="big-time" id="big-time">--:--</div>
+    <div class="sub-line" id="sub-line">tap below to begin</div>
+    <div class="prog-wrap" id="prog-wrap" style="display:none">
+      <div class="prog-bar"><div class="prog-fill" id="prog-fill"></div></div>
+      <div class="prog-meta">
+        <span id="countdown-label">time remaining</span>
+        <span class="pct" id="pct-label">0%</span>
+      </div>
     </div>
   </div>
 
-  <div class="progress-card">
-    <div class="progress-header">
-      <span class="progress-title">daily goal — 3 L min</span>
-      <span class="progress-frac" id="progFrac">0 / 3</span>
+  <button class="btn btn-in" id="main-btn" onclick="handleBtn()">Punch in</button>
+
+  <div class="summary" id="summary">
+    <div class="summary-cell">
+      <div class="s-label">punched in</div>
+      <div class="s-val" id="s-in">--:--</div>
     </div>
-    <div class="drops-row" id="dropsRow"></div>
+    <div class="summary-cell">
+      <div class="s-label">punched out</div>
+      <div class="s-val" id="s-out">--:--</div>
+    </div>
+    <div class="summary-cell" style="grid-column:1/-1">
+      <div class="s-label">total logged</div>
+      <div class="s-val" id="s-hrs">-- hrs</div>
+    </div>
   </div>
 
-  <div class="status idle" id="statusMsg">Tap Log Refill to record a litre.</div>
-
-  <div class="log-card">
-    <div class="log-header">Today's log</div>
-    <div id="logList"><div class="no-log">No entries yet.</div></div>
-  </div>
-
+  <div class="reset-link" id="reset-link" onclick="resetDay()">↺ reset for tomorrow</div>
+  <div onclick="demoAlert()" style="text-align:center;font-size:11px;font-family:'DM Mono',monospace;color:#6b7280;cursor:pointer;padding:0.4rem;opacity:0.5" id="demo-link">preview alert state</div>
 </div>
 
 <script>
-const SCRIPT_KEY = 'wt_url_v2';
-let scriptUrl = localStorage.getItem(SCRIPT_KEY) || '';
-let todayLog = [];
-let twoDayCount = 0;
+const WORK_MS = 8 * 60 * 60 * 1000;
+const S = { IDLE:'idle', IN:'in', DONE:'done', OUT:'out' };
+let state = S.IDLE, punchIn = null, punchOut = null, ticker = null, alarmFired = false;
 
-function todayStr() {
-  const d = new Date();
-  return pad(d.getDate()) + '/' + pad(d.getMonth()+1) + '/' + d.getFullYear();
+function fmt12(d) {
+  return d.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', hour12:true });
 }
-function yesterdayStr() {
-  const d = new Date(); d.setDate(d.getDate()-1);
-  return pad(d.getDate()) + '/' + pad(d.getMonth()+1) + '/' + d.getFullYear();
-}
-function pad(n) { return String(n).padStart(2,'0'); }
-
-function saveUrl() {
-  const val = document.getElementById('scriptUrl').value.trim();
-  if (!val.startsWith('https://')) {
-    hint('Must be a valid https:// URL', true); return;
-  }
-  scriptUrl = val;
-  localStorage.setItem(SCRIPT_KEY, val);
-  hint('Saved! Connecting...', false);
-  loadData();
+function fmtCountdown(ms) {
+  if (ms <= 0) return '0:00:00';
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+  return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
 }
 
-function hint(msg, err) {
-  const el = document.getElementById('urlHint');
-  el.textContent = msg;
-  el.style.color = err ? 'var(--red)' : 'var(--muted)';
+function handleBtn() {
+  if (state === S.IDLE) { punchIn = new Date(); state = S.IN; startTicker(); }
+  else if (state === S.DONE) { punchOut = new Date(); state = S.OUT; clearInterval(ticker); }
+  // state === S.IN: button is locked, do nothing
+  render();
 }
 
-async function loadData() {
-  if (!scriptUrl) return;
-  try {
-    const res = await fetch(scriptUrl);
-    const data = await res.json();
-    const today = todayStr(), yesterday = yesterdayStr();
-    let todayCount = 0;
-    twoDayCount = 0;
-    todayLog = [];
-    (data.rows || []).forEach(r => {
-      const d = String(r.date || '').trim();
-      if (d === today) { todayCount++; twoDayCount++; todayLog.push(String(r.time || '').substring(0,5)); }
-      else if (d === yesterday) twoDayCount++;
+function demoAlert() {
+  punchIn = new Date(Date.now() - WORK_MS);
+  state = S.DONE;
+  alarmFired = true;
+  clearInterval(ticker);
+  // Start ticker so progress bar shows 100% and countdown stays at 0
+  ticker = setInterval(() => {
+    document.getElementById('prog-fill').style.width = '100%';
+    document.getElementById('prog-fill').classList.add('orange');
+    document.getElementById('pct-label').textContent = '100%';
+    document.getElementById('countdown-label').textContent = '0:00:00';
+  }, 1000);
+  fireAlert();
+  render();
+}
+
+function startTicker() {
+  clearInterval(ticker);
+  ticker = setInterval(() => {
+    const elapsed = Date.now() - punchIn;
+    const remaining = WORK_MS - elapsed;
+    const pct = Math.min(100, Math.round((elapsed / WORK_MS) * 100));
+    const fill = document.getElementById('prog-fill');
+    fill.style.width = pct + '%';
+    if (pct >= 80) fill.classList.add('orange'); else fill.classList.remove('orange');
+    document.getElementById('pct-label').textContent = pct + '%';
+    document.getElementById('countdown-label').textContent = remaining > 0 ? fmtCountdown(remaining) : '0:00:00';
+    if (remaining <= 0 && !alarmFired) { alarmFired = true; state = S.DONE; fireAlert(); render(); }
+  }, 1000);
+}
+
+function fireAlert() {
+  document.getElementById('alert-overlay').classList.add('show');
+  document.getElementById('alert-banner').classList.add('show');
+  document.getElementById('alert-sub-text').textContent = `punched in at ${fmt12(punchIn)}`;
+
+  if ('Notification' in window) {
+    Notification.requestPermission().then(p => {
+      if (p === 'granted') new Notification('8 hrs done — punch out!', {
+        body: `You punched in at ${fmt12(punchIn)}. Open PeopleStrong now.`,
+        requireInteraction: true
+      });
     });
-    updateUI(todayCount);
-    renderLog();
-    hint('Connected ✓', false);
-    document.getElementById('setupCard').style.borderColor = '#9fe1cb';
-  } catch(e) {
-    setStatus('Could not load data. Check URL.', 'error');
+  }
+
+  // Wake lock to keep screen on (if supported)
+  if ('wakeLock' in navigator) {
+    navigator.wakeLock.request('screen').catch(() => {});
   }
 }
 
-async function logRefill() {
-  if (!scriptUrl) { setStatus('Save your Apps Script URL first.', 'error'); return; }
-  const btn = document.getElementById('logBtn');
-  btn.disabled = true;
-  setStatus('Logging...', 'loading');
-  try {
-    const res = await fetch(scriptUrl + '?action=log');
-    const data = await res.json();
-    if (data.success) {
-      const t = (data.time || '').substring(0,5) || new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
-      todayLog.push(t);
-      twoDayCount++;
-      updateUI(todayLog.length);
-      renderLog();
-      setStatus('Logged 1 L at ' + t + ' ✓', 'success');
-    } else {
-      setStatus('Script error. Try again.', 'error');
-    }
-  } catch(e) {
-    setStatus('Fetch failed: ' + e.message, 'error');
+function render() {
+  const dot = document.getElementById('header-dot');
+  const card = document.getElementById('main-card');
+  const tag = document.getElementById('state-tag');
+  const bt = document.getElementById('big-time');
+  const sub = document.getElementById('sub-line');
+  const btn = document.getElementById('main-btn');
+  const pw = document.getElementById('prog-wrap');
+  const sum = document.getElementById('summary');
+  const rl = document.getElementById('reset-link');
+  const overlay = document.getElementById('alert-overlay');
+  const banner = document.getElementById('alert-banner');
+
+  if (state === S.IDLE) {
+    dot.className = 'header-dot inactive';
+    card.className = 'card';
+    tag.textContent = 'waiting for punch in';
+    bt.textContent = '--:--'; bt.className = 'big-time';
+    sub.innerHTML = 'tap below to begin';
+    btn.className = 'btn btn-in'; btn.textContent = 'Punch in';
+    pw.style.display = 'none';
+    sum.classList.remove('show');
+    rl.classList.remove('show');
+    overlay.classList.remove('show');
+    banner.classList.remove('show');
   }
-  btn.disabled = false;
-}
 
-function updateUI(today) {
-  document.getElementById('todayVal').innerHTML = today + '<span class="stat-unit"> L</span>';
-  document.getElementById('twodayVal').innerHTML = twoDayCount + '<span class="stat-unit"> L</span>';
-  document.getElementById('progFrac').textContent = today + ' / 3';
-
-  const tb = document.getElementById('todayBadge');
-  if (today >= 3) tb.innerHTML = '<span class="stat-badge badge-ok">goal met</span>';
-  else if (today === 2) tb.innerHTML = '<span class="stat-badge badge-warn">1 more to go</span>';
-  else tb.innerHTML = '<span class="stat-badge badge-low">' + (3 - today) + ' more needed</span>';
-
-  const db = document.getElementById('twodayBadge');
-  if (twoDayCount >= 7) db.innerHTML = '<span class="stat-badge badge-ok">ideal ✓</span>';
-  else if (twoDayCount >= 3) db.innerHTML = '<span class="stat-badge badge-warn">' + (7 - twoDayCount) + ' to ideal</span>';
-  else db.innerHTML = '<span class="stat-badge badge-low">keep going</span>';
-
-  renderDrops(today);
-}
-
-function renderDrops(count) {
-  const row = document.getElementById('dropsRow');
-  row.innerHTML = '';
-  const total = Math.max(count, 3);
-  for (let i = 0; i < total; i++) {
-    const d = document.createElement('div');
-    if (i < count && i < 3) { d.className = 'drop filled'; d.textContent = '💧'; }
-    else if (i < count) { d.className = 'drop filled bonus'; d.textContent = '💧'; }
-    else { d.className = 'drop'; d.textContent = (i+1); }
-    row.appendChild(d);
+  if (state === S.IN) {
+    dot.className = 'header-dot';
+    card.className = 'card active';
+    tag.textContent = 'session active';
+    bt.textContent = fmt12(punchIn); bt.className = 'big-time green';
+    const target = new Date(punchIn.getTime() + WORK_MS);
+    sub.innerHTML = `punch out after <span>${fmt12(target)}</span>`;
+    btn.className = 'btn btn-locked'; btn.textContent = 'Punch out (not yet)';
+    pw.style.display = 'block';
+    sum.classList.remove('show');
+    rl.classList.remove('show');
   }
-}
 
-function renderLog() {
-  const el = document.getElementById('logList');
-  if (!todayLog.length) { el.innerHTML = '<div class="no-log">No entries yet.</div>'; return; }
-  el.innerHTML = [...todayLog].reverse().map((t,i) => `
-    <div class="log-entry">
-      <div>
-        <div class="log-time">${t}</div>
-      </div>
-      <span class="log-amt">+1 L</span>
-    </div>`).join('');
-}
+  if (state === S.DONE) {
+    card.className = 'card ready';
+    tag.textContent = '8 hrs complete';
+    bt.textContent = fmt12(punchIn); bt.className = 'big-time orange';
+    sub.innerHTML = `safe to punch out now`;
+    btn.className = 'btn btn-out'; btn.textContent = 'Punch out';
+    pw.style.display = 'block';
+  }
 
-function setStatus(msg, type) {
-  const el = document.getElementById('statusMsg');
-  el.textContent = msg;
-  el.className = 'status ' + type;
-}
+  if (state === S.OUT) {
+    dot.className = 'header-dot inactive';
+    card.className = 'card';
+    tag.textContent = 'day complete';
+    const ms = punchOut - punchIn;
+    const hrs = (ms / 3600000).toFixed(1);
+    bt.textContent = fmt12(punchOut); bt.className = 'big-time';
+    sub.innerHTML = `${hrs} hrs logged today`;
+    btn.className = 'btn btn-done'; btn.textContent = 'See you tomorrow';
+    pw.style.display = 'none';
+    overlay.classList.remove('show');
+    banner.classList.remove('show');
 
-function init() {
-  const d = new Date();
-  document.getElementById('dateLabel').textContent =
-    d.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short' });
-  renderDrops(0);
-  if (scriptUrl) {
-    document.getElementById('scriptUrl').value = scriptUrl;
-    hint('Saved. Loading...', false);
-    loadData();
+    document.getElementById('s-in').textContent = fmt12(punchIn);
+    document.getElementById('s-out').textContent = fmt12(punchOut);
+    document.getElementById('s-hrs').textContent = hrs + ' hrs';
+    sum.classList.add('show');
+    rl.classList.add('show');
   }
 }
 
-init();
+function resetDay() {
+  state = S.IDLE; punchIn = null; punchOut = null; alarmFired = false;
+  clearInterval(ticker);
+  render();
+}
+
+render();
 </script>
 </body>
 </html>
